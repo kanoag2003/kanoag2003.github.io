@@ -1,19 +1,19 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // if using auth
-import { getFirestore } from "firebase/firestore"; // if using firestore
+import { getFirestore } from "firebase/firestore";
+
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBsZ0OVpbBasjq_6Nb7bFFPXIFTMLLUBjY",
+  authDomain: "tattoo-consent-form.firebaseapp.com",
+  projectId: "tattoo-consent-form",
+  storageBucket: "tattoo-consent-form.firebasestorage.app",
+  messagingSenderId: "749065746184",
+  appId: "1:749065746184:web:e90df03355ac9ace735ebd",
+  measurementId: "G-C87YZ0LDBQ"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getFirestore(app); 
 
-export { app, auth, db };
+export { db };
