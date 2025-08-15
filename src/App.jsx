@@ -37,41 +37,6 @@ export default function App() {
 
   const formattedDate = currentDate.toLocaleDateString();
   
-  const getData = {
-    name: name.trim(), 
-    email: Email.trim(), 
-    birthDate: Birth.trim(),
-    phoneNumber: phoneNumber.trim(),
-    idNumber: idNumber.trim(), 
-    emergencyContact: {
-      name: emergencyName.trim(),
-      relationship: relationship.trim(), 
-      phoneNumber: emergencyNumber.trim(),
-    }, 
-    consent: {
-      underInfluence: Influence,
-      atLeast18: Option
-    },
-    explanation: Option === "Yes" ? Explain.trim() : null, 
-    signature: signatureRef.current ? signatureRef.current.toDataURL() : null, 
-    date: formattedDate,
-    };
-    // for EmailJS
-    const templateParams = {
-      name: getData.name,
-      birthDate: getData.birthDate,
-      phoneNumber: getData.phoneNumber,
-      idNumber: getData.idNumber,
-      emergencyContactName: getData.emergencyContact.name,
-      emergencyContactRelationship: getData.emergencyContact.relationship,
-      emergencyContactPhone: getData.emergencyContact.phoneNumber,
-      underInfluence: getData.consent.underInfluence,
-      atLeast18: getData.consent.atLeast18,
-      explanation: getData.explanation || "None",
-      date: getData.date,
-      signature: getData.signature 
-    };
-  
 
 
 
@@ -155,7 +120,7 @@ export default function App() {
 
   const handleIDPhoto = (e) => {
     const file = e.target.files[0];
-    if (file && file.startsWith("image/")) {
+    if (file && file.type.startsWith("image/")) {
       setidPhoto(file); 
     }
   };
@@ -168,16 +133,67 @@ export default function App() {
     return () => clearInterval(interval); 
   }, []);
 
+  //convert photo to base64 for EmailJS
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-  const handleSubmit =  async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!name.trim()) {
-      setError("You are missing one or more requirments");
+      setError("You are missing one or more requirements");
       return;
     }
+  
     try {
+      const idPhotoBase64 = idPhoto ? await convertToBase64(idPhoto) : null;
 
+      const getData = {
+        name: name.trim(),
+        email: Email.trim(),
+        birthDate: Birth.trim(),
+        phoneNumber: phoneNumber.trim(),
+        idNumber: idNumber.trim(),
+        emergencyContact: {
+          name: emergencyName.trim(),
+          relationship: relationship.trim(),
+          phoneNumber: emergencyNumber.trim(),
+        },
+        consent: {
+          underInfluence: Influence,
+          atLeast18: Option,
+        },
+        explanation: Option === "Yes" ? Explain.trim() : null,
+        IDphoto: idPhotoBase64,
+        signature: signatureRef.current ? signatureRef.current.toDataURL() : null,
+        date: formattedDate,
+      };
+ 
       await addDoc(collection(db, "clients"), getData);
+  
+
+      const templateParams = {
+        name: getData.name,
+        birthDate: getData.birthDate,
+        phoneNumber: getData.phoneNumber,
+        idNumber: getData.idNumber,
+        emergencyContactName: getData.emergencyContact.name,
+        emergencyContactRelationship: getData.emergencyContact.relationship,
+        emergencyContactPhone: getData.emergencyContact.phoneNumber,
+        underInfluence: getData.consent.underInfluence,
+        atLeast18: getData.consent.atLeast18,
+        explanation: getData.explanation || "None",
+        date: getData.date,
+        signature: getData.signature,
+        IDphoto: getData.IDphoto,
+      };
+  
 
       await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -185,36 +201,40 @@ export default function App() {
         templateParams,
         process.env.REACT_APP_EMAILJS_USER_ID
       );
-      alert("Form submitted successfully!"); 
+  
+      alert("Form submitted successfully!");
+  
 
-    setName("");
-    setBirth("");
-    setAge(0);
-    setphoneNumber("");
-    setidNumber("");
-    setEmergencyName("");
-    setRelationship("");
-    setemergencyNumber("");
-    setError("");
-    setHealth({
-      bloodborne: false,
-      diabetes: false,
-      skin: false,
-      latex: false,
-      heart: false,
-      bloodclott: false,
-      epilepsy: false,
-      pregnant: false,
-      none: false,
-    });
-    setExplain("");
-    setInfluence("");
-    signatureRef.current.clear();
-  } catch(error) {
-    console.error("Error adding document: ", error);
-    alert("Error submitting form. Please try again.");
-  }
-};
+      setName("");
+      setBirth("");
+      setAge(0);
+      setphoneNumber("");
+      setidNumber("");
+      setEmergencyName("");
+      setRelationship("");
+      setemergencyNumber("");
+      setError("");
+      setHealth({
+        bloodborne: false,
+        diabetes: false,
+        skin: false,
+        latex: false,
+        heart: false,
+        bloodclott: false,
+        epilepsy: false,
+        pregnant: false,
+        none: false,
+      });
+      setExplain("");
+      setInfluence("");
+      signatureRef.current.clear();
+      setidPhoto(null);
+  
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error submitting form. Please try again.");
+    }
+  };
 
   const handleOption = (e) => {
     setOption(e.target.value);
