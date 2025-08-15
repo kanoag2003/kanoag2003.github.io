@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { collection, addDoc } from "firebase/firestore"; 
 import { db } from "./firebase"; 
+import emailjs from 'emailjs-com'; 
 import "./App.css";
 
 
@@ -10,7 +11,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [Birth, setBirth] = useState(""); 
-  const [Age, setAge] = useState(0);
+  const [Age, setAge] = useState();
   const[phoneNumber, setphoneNumber] = useState("");
   const [idNumber, setidNumber] = useState("")
   const [emergencyName, setEmergencyName] = useState("");
@@ -55,6 +56,21 @@ export default function App() {
     signature: signatureRef.current ? signatureRef.current.toDataURL() : null, 
     date: formattedDate,
     };
+    // for EmailJS
+    const templateParams = {
+      name: getData.name,
+      birthDate: getData.birthDate,
+      phoneNumber: getData.phoneNumber,
+      idNumber: getData.idNumber,
+      emergencyContactName: getData.emergencyContact.name,
+      emergencyContactRelationship: getData.emergencyContact.relationship,
+      emergencyContactPhone: getData.emergencyContact.phoneNumber,
+      underInfluence: getData.consent.underInfluence,
+      atLeast18: getData.consent.atLeast18,
+      explanation: getData.explanation || "None",
+      date: getData.date,
+      signature: getData.signature 
+    };
   
 
 
@@ -83,15 +99,15 @@ export default function App() {
   };
 
   const handlephoneNumber = (e) => {
-    const phoneValue = e.target.value.trim();
-    const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
-
-    if(phoneRegex.test(phoneValue)) {
-      setphoneNumber(phoneValue);
-    } else{
-      alert('Enter a valid number');
-    }
+    setphoneNumber(e.target.value);
   };
+
+  const validatePhone = (e) => {
+    const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    if (!phoneRegex.test(phoneNumber.trim())) {
+      alert("Enter a valid number");
+    }
+  }
 
   const handleidNumber = (e) => {
     const idValue = e.target.value.trim();
@@ -107,13 +123,13 @@ export default function App() {
   const handleRelationship = (e) => setRelationship(e.target.value);  
 
   const handleEmergencyNumber = (e) => {
-    const emergencyValue = e.target.value.trim();
-    const emergencyphoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    setemergencyNumber(e.target.value.trim()); 
+  };
 
-    if (emergencyphoneRegex.test(emergencyValue)) {
-      setemergencyNumber(emergencyValue);
-    } else {
-      alert('Enter valid phone number')
+  const validateEmergencyNumber = (e) => {
+    const emergencyphoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    if (!emergencyphoneRegex.test(emergencyNumber.trim())) {
+      alert("Enter a valid number");
     }
   };
 
@@ -162,6 +178,13 @@ export default function App() {
     try {
 
       await addDoc(collection(db, "clients"), getData);
+
+      await emailjs.send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID,
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        process.env.REACT_APP_EMAILJS_USER_ID
+      );
       alert("Form submitted successfully!"); 
 
     setName("");
@@ -244,8 +267,8 @@ export default function App() {
           {/* Number section */}
           <div className="Number-section">
             <label htmlFor="Number">Phone Number: </label>
-            <input type="text" id="Number" value={phoneNumber} onChange={handlephoneNumber}
-            placeholder="(253)-555-666" required></input>
+            <input type="text" id="Number" value={phoneNumber} onChange={handlephoneNumber} onBlur={validatePhone}
+            placeholder="(253)-555-6666" required></input>
           </div>
 
           { /* ID number */}
@@ -271,7 +294,7 @@ export default function App() {
 
           <div className="emergency-number">
           <label htmlFor="emergency-number">Phone Number: </label>
-          <input type="text" id="emergency-number" value={emergencyNumber} onChange={handleEmergencyNumber} required></input>
+          <input type="text" id="emergency-number" value={emergencyNumber} onChange={handleEmergencyNumber}onBlur={validateEmergencyNumber}placeholder="(253)-555-6666" required></input>
           </div>
 
           {/*Health Section */}
@@ -449,6 +472,15 @@ export default function App() {
             ref={signatureRef} placeholder="Signature">Client Signature: </SignatureCanvas>
           </div>
 
+          <div className="client-Email">
+          <input 
+          type="email"
+          id="email"
+          value={Email}
+          onChange={(e) => setEmail(e.target.value)}
+          ></input>
+          </div>
+
           <div className="ID-section">
             <label htmlFor="ID photo">
             Photo ID:
@@ -468,12 +500,6 @@ export default function App() {
           <div className="Submit">
             <button type="submit">Submit</button>
           </div>
-          <input 
-          type="email"
-          id="email"
-          value={Email}
-          onChange={(e) => setEmail(e.target.value)}
-          ></input>
         </form>
       </div>
     </div>
