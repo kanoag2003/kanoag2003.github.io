@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { collection, addDoc } from "firebase/firestore"; 
-import { db } from "./firebase"; 
+import { db, storage } from "./firebase"; 
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import emailjs from 'emailjs-com'; 
 import "./App.css";
 
@@ -11,7 +12,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [Birth, setBirth] = useState(""); 
-  const [Age, setAge] = useState();
+  const [Age, setAge] = useState("");
   const[phoneNumber, setphoneNumber] = useState("");
   const [idNumber, setidNumber] = useState("")
   const [emergencyName, setEmergencyName] = useState("");
@@ -118,6 +119,17 @@ export default function App() {
     signatureRef.current.toDataURL(); 
   }
 
+  const getHealthSelections = () => {
+    if (Health.none){
+      return "N/A"; 
+    }
+    const selected = Object.keys(Health)
+      .filter((key) => Health[key]) // keep only checked
+      .map((key) => key.charAt(0).toUpperCase() + key.slice(1));
+  
+    return selected.length > 0 ? selected.join(", ") : "None";
+  };
+
   const handleIDPhoto = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -133,16 +145,6 @@ export default function App() {
     return () => clearInterval(interval); 
   }, []);
 
-  //convert photo to base64 for EmailJS
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -152,7 +154,29 @@ export default function App() {
     }
   
     try {
-      const idPhotoBase64 = idPhoto ? await convertToBase64(idPhoto) : null;
+      let signatureURL = null; 
+      let idPhotoURL =  null;
+      //upload ID photo
+      if (idPhoto){
+        const idRef = ref(storage, `idPhotos/${Date.now()}_${idPhoto.name}`);
+        await uploadBytes(idRef, idPhoto);
+        idPhotoURL = await getDownloadURL(idRef); 
+        console.log("URL:", idPhotoURL); 
+      }
+      //upload the signature 
+      if (signatureRef.current && !signatureRef.current.isEmpty()) {
+        const canvas = signatureRef.current.getTrimmedCanvas();
+        if (canvas) {
+          const signatureBlob = await new Promise((resolve) =>
+            canvas.toBlob(resolve)
+      );
+      const sigRef = ref(storage, `signatures/${Date.now()}.png`);
+      await uploadBytes(sigRef, signatureBlob);
+      signatureURL = await getDownloadURL(sigRef);
+      console.log("Signature URL:", signatureURL);
+        }
+      }
+
 
       const getData = {
         name: name.trim(),
@@ -170,8 +194,9 @@ export default function App() {
           atLeast18: Option,
         },
         explanation: Option === "Yes" ? Explain.trim() : null,
-        IDphoto: idPhotoBase64,
-        signature: signatureRef.current ? signatureRef.current.toDataURL() : null,
+        health: getHealthSelections(), 
+        IDphoto: idPhotoURL,
+        signature: signatureURL,
         date: formattedDate,
       };
  
@@ -192,6 +217,7 @@ export default function App() {
         date: getData.date,
         signature: getData.signature,
         IDphoto: getData.IDphoto,
+        healthSelections: getData.health
       };
   
 
@@ -227,7 +253,7 @@ export default function App() {
       });
       setExplain("");
       setInfluence("");
-      signatureRef.current.clear();
+      if (signatureRef.current) signatureRef.current.clear();
       setidPhoto(null);
   
     } catch (error) {
