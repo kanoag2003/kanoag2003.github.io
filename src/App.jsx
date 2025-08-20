@@ -1,8 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { collection, addDoc } from "firebase/firestore"; 
-import { db, storage } from "./firebase"; 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import emailjs from 'emailjs-com'; 
 import "./App.css";
 
@@ -31,8 +28,8 @@ export default function App() {
   });
   const [Explain, setExplain] = useState("");
   const [Influence, setInfluence] = useState(""); 
+  const[savedSignature, setSavedSignature] = useState(null); 
   const signatureRef =  useRef(null); 
-  const [idPhoto, setidPhoto] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [Email, setEmail] = useState(""); 
 
@@ -116,8 +113,14 @@ export default function App() {
   } 
 
   const saveSignature = () => {
-    signatureRef.current.toDataURL(); 
-  }
+    if (signatureRef.current && !signatureRef.current.isEmpty()) {
+      const dataURL = signatureRef.current.toDataURL("image/png");
+      setSavedSignature(dataURL);
+      alert("Signature saved!");
+    } else {
+      alert("Please provide a signature first.");
+    }
+  };
 
   const getHealthSelections = () => {
     if (Health.none){
@@ -130,13 +133,6 @@ export default function App() {
     return selected.length > 0 ? selected.join(", ") : "None";
   };
 
-  const handleIDPhoto = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setidPhoto(file); 
-    }
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDate(new Date());
@@ -147,34 +143,19 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+
     if (!name.trim()) {
       setError("You are missing one or more requirements");
       return;
     }
   
     try {
-      let signatureURL = null; 
-      let idPhotoURL =  null;
-      //upload ID photo
-      if (idPhoto){
-        const idRef = ref(storage, `idPhotos/${Date.now()}_${idPhoto.name}`);
-        await uploadBytes(idRef, idPhoto);
-        idPhotoURL = await getDownloadURL(idRef); 
-        console.log("URL:", idPhotoURL); 
-      }
-      //upload the signature 
-      if (signatureRef.current && !signatureRef.current.isEmpty()) {
-        const canvas = signatureRef.current.getTrimmedCanvas();
-        if (canvas) {
-          const signatureBlob = await new Promise((resolve) =>
-            canvas.toBlob(resolve)
-      );
-      const sigRef = ref(storage, `signatures/${Date.now()}.png`);
-      await uploadBytes(sigRef, signatureBlob);
-      signatureURL = await getDownloadURL(sigRef);
-      console.log("Signature URL:", signatureURL);
-        }
+      let signatureURL = savedSignature; 
+      
+      // Get signature as Base64
+      if (!signatureURL && signatureRef.current && !signatureRef.current.isEmpty()) {
+        signatureURL = signatureRef.current.toDataURL("image/png");
       }
 
 
@@ -195,12 +176,9 @@ export default function App() {
         },
         explanation: Option === "Yes" ? Explain.trim() : null,
         health: getHealthSelections(), 
-        IDphoto: idPhotoURL,
         signature: signatureURL,
         date: formattedDate,
       };
- 
-      await addDoc(collection(db, "clients"), getData);
   
 
       const templateParams = {
@@ -215,8 +193,7 @@ export default function App() {
         atLeast18: getData.consent.atLeast18,
         explanation: getData.explanation || "None",
         date: getData.date,
-        signature: getData.signature,
-        IDphoto: getData.IDphoto,
+        signature:signatureURL,
         healthSelections: getData.health
       };
   
@@ -233,7 +210,7 @@ export default function App() {
 
       setName("");
       setBirth("");
-      setAge(0);
+      setAge("");
       setphoneNumber("");
       setidNumber("");
       setEmergencyName("");
@@ -254,8 +231,8 @@ export default function App() {
       setExplain("");
       setInfluence("");
       if (signatureRef.current) signatureRef.current.clear();
-      setidPhoto(null);
-  
+      setSavedSignature(null); 
+
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Error submitting form. Please try again.");
@@ -510,7 +487,7 @@ export default function App() {
 
           {/*Client signature and photo ID */}
           <div className="Client-signature">
-            <h3>Client Signature and Photo ID </h3>
+            <h3>Client Signature and Email </h3>
           </div>
 
           <div className="Signature">
@@ -525,14 +502,6 @@ export default function App() {
           value={Email}
           onChange={(e) => setEmail(e.target.value)}
           ></input>
-          </div>
-
-          <div className="ID-section">
-            <label htmlFor="ID photo">
-            Photo ID:
-            </label>
-            <input type="file" accept="image/jpeg, image/png" name="ID-file"
-            capture="environment" onChange={handleIDPhoto}></input>
           </div>
 
           <div className="Date">
