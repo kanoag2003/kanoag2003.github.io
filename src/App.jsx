@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import "./App.css";
 
 
