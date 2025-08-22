@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import "./App.css";
 
 
@@ -247,7 +247,7 @@ export default function App() {
     setOption(e.target.value);
   };
 
-  function QRCodeGenerator() {
+  function QRCodeGenerator({ data }) {
     const formURL = "https://proxy-tattoo-server.onrender.com"; 
   
     return (
