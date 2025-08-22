@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import emailjs from 'emailjs-com'; 
+import QRCode from "qrcode.react";
 import "./App.css";
 
 
@@ -66,7 +66,7 @@ export default function App() {
   };
 
   const validatePhone = (e) => {
-    const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    const phoneRegex = /^\d{10}$|^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
     if (!phoneRegex.test(phoneNumber.trim())) {
       alert("Enter a valid number");
     }
@@ -198,14 +198,18 @@ export default function App() {
       };
   
 
-      await emailjs.send(
-        process.env.REACT_APP_EMAILJS_SERVICE_ID,
-        process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-        templateParams,
-        process.env.REACT_APP_EMAILJS_USER_ID
-      );
-  
+      const response = await fetch("https://proxy-tattoo-server.onrender.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateParams }),
+      });
+
+      const result = await response.json();
+    if (result.success) {
       alert("Form submitted successfully!");
+    } else {
+      alert("Error sending form: " + result.error);
+    }
   
 
       setName("");
@@ -242,6 +246,18 @@ export default function App() {
   const handleOption = (e) => {
     setOption(e.target.value);
   };
+
+  function QRCodeGenerator() {
+    const formURL = "https://proxy-tattoo-server.onrender.com"; 
+  
+    return (
+      <div>
+        <h3>Scan to Open Form</h3>
+        <QRCode value={formURL} size={256} />
+      </div>
+    );
+  }
+
 
   return (
     <div className="App">
