@@ -254,7 +254,7 @@ export default function App() {
         <h1 style={{ fontFamily: "Dancing Script", fontWeight: "bold" }}>
           Tatted By Cam🖊️
         </h1>
-        <QRCodeSVG value="kanoag2003-github-io.vercel.app"></QRCodeSVG>
+        <QRCodeSVG value="https://kanoag2003-github-io.vercel.app"></QRCodeSVG>
       </header>
 
       <div className="App-content">
