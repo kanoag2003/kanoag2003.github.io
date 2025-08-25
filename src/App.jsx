@@ -247,17 +247,6 @@ export default function App() {
     setOption(e.target.value);
   };
 
-  function QRCodeGenerator({ data }) {
-    const formURL = "https://proxy-tattoo-server.onrender.com"; 
-  
-    return (
-      <div>
-        <h3>Scan to Open Form</h3>
-        <QRCode value={formURL} size={256} />
-      </div>
-    );
-  }
-
 
   return (
     <div className="App">
@@ -265,6 +254,7 @@ export default function App() {
         <h1 style={{ fontFamily: "Dancing Script", fontWeight: "bold" }}>
           Tatted By Cam🖊️
         </h1>
+        <QRCodeSVG value="kanoag2003-github-io.vercel.app"></QRCodeSVG>
       </header>
 
       <div className="App-content">
