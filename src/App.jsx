@@ -251,10 +251,10 @@ export default function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <QRCodeSVG classNam="QR-code "value="https://kanoag2003-github-io.vercel.app" size={50}></QRCodeSVG>
         <h1 style={{ fontFamily: "Dancing Script", fontWeight: "bold" }}>
           Tatted By Cam🖊️
         </h1>
-        <QRCodeSVG value="https://kanoag2003-github-io.vercel.app"></QRCodeSVG>
       </header>
 
       <div className="App-content">
