@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
+ import emailjs from '@emailjs/browser'
 import { QRCodeSVG } from "qrcode.react";
 import "./App.css";
 
@@ -179,8 +180,6 @@ export default function App() {
         signature: signatureURL,
         date: formattedDate,
       };
-  
-
       const templateParams = {
         name: getData.name,
         birthDate: getData.birthDate,
@@ -193,23 +192,18 @@ export default function App() {
         atLeast18: getData.consent.atLeast18,
         explanation: getData.explanation || "None",
         date: getData.date,
-        signature:signatureURL,
+        signature: signatureURL,
         healthSelections: getData.health
       };
-  
 
-      const response = await fetch("https://proxy-tattoo-server.onrender.com/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateParams }),
-      });
+        await emailjs.send(
+        "service_mdgt8qj",          
+        "template_5q8ryd2",         
+        templateParams,             
+        "DBj4jbpjh38FW6ugC"        
+      );
 
-      const result = await response.json();
-    if (result.success) {
-      alert("Form submitted successfully!");
-    } else {
-      alert("Error sending form: " + result.error);
-    }
+      alert('Form submitted successfully'); 
   
 
       setName("");
@@ -251,7 +245,7 @@ export default function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <QRCodeSVG classNam="QR-code "value="https://kanoag2003-github-io.vercel.app" size={100}></QRCodeSVG>
+        <QRCodeSVG className="QR-code "value="https://kanoag2003-github-io.vercel.app" size={100}></QRCodeSVG>
         <h1 style={{ fontFamily: "Dancing Script", fontWeight: "bold" }}>
           Tatted By Cam🖊️
         </h1>
@@ -297,7 +291,7 @@ export default function App() {
           <div className="Number-section">
             <label htmlFor="Number">Phone Number: </label>
             <input type="text" id="Number" value={phoneNumber} onChange={handlephoneNumber} onBlur={validatePhone}
-            placeholder="(253)-555-6666" required></input>
+            placeholder="(253)555-6666" required></input>
           </div>
 
           { /* ID number */}
@@ -323,7 +317,7 @@ export default function App() {
 
           <div className="emergency-number">
           <label htmlFor="emergency-number">Phone Number: </label>
-          <input type="text" id="emergency-number" value={emergencyNumber} onChange={handleEmergencyNumber}onBlur={validateEmergencyNumber}placeholder="(253)-555-6666" required></input>
+          <input type="text" id="emergency-number" value={emergencyNumber} onChange={handleEmergencyNumber}onBlur={validateEmergencyNumber}placeholder="(253)555-6666" required></input>
           </div>
 
           {/*Health Section */}
