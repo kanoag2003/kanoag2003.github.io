@@ -245,7 +245,7 @@ export default function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <QRCodeSVG className="QR-code "value="https://kanoag2003-github-io.vercel.app" size={100}></QRCodeSVG>
+        <QRCodeSVG className="QR-code "value="http://tattoo-consent-form.vercel.app" size={100}></QRCodeSVG>
         <h1 style={{ fontFamily: "Dancing Script", fontWeight: "bold" }}>
           Tatted By Cam🖊️
         </h1>
@@ -500,6 +500,7 @@ export default function App() {
           type="email"
           id="email"
           value={Email}
+          placeholder="Email" 
           onChange={(e) => setEmail(e.target.value)}
           ></input>
           </div>
