@@ -85,6 +85,12 @@ input[type="radio"] {
   background-color: white;
 }
 
+.client-Email input::placeholder, .Signature input::placeholder {
+  color: #555;
+  font-style: italic;
+  opacity: 1;
+}
+
 .ID-section {
   display: flex;
   align-items: center;
