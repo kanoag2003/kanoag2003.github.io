@@ -28,9 +28,7 @@
   color: #ff69b4;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px; 
-  padding-right: 5px; 
+  justify-content: center; 
   font-size: calc(10px + 2vmin);
   border-bottom: 2px solid #ff69b4;
   box-shadow: 0 4px 6px rgba(255, 105, 180, 0.2);
