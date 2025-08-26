@@ -198,7 +198,7 @@ export default function App() {
       };
   
 
-      const response = await fetch("https://proxy-tattoo-server.onrender.com", {
+      const response = await fetch("https://proxy-tattoo-server.onrender.com/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ templateParams }),
