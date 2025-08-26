@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
- import emailjs from '@emailjs/browser'
+import emailjs from '@emailjs/browser';
+import { QRCodeSVG } from "qrcode.react";
 import "./App.css";
 
 
